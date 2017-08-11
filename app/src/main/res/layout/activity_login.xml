@@ -10,6 +10,23 @@
     android:padding="16dp"
     >
     
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        >
+        
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:contentDescription="Briogas Icon"
+            android:src="@mipmap/ic_launcher"
+            tools:ignore="ContentDescription,HardcodedText"
+            />
+        
+    </RelativeLayout>
+    
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,7 +39,9 @@
             android:layout_gravity="bottom"
             android:layout_marginBottom="8dp"
             android:layout_marginRight="16dp"
+            android:contentDescription="Username input icon"
             android:src="@drawable/ic_user"
+            tools:ignore="HardcodedText,RtlHardcoded"
             />
             
         <android.support.design.widget.TextInputLayout
@@ -40,7 +59,7 @@
                 android:singleLine="true"
                 android:text="ronald"
                 android:theme="@style/EditTextLight"
-                tools:ignore="HardcodedText"
+                tools:ignore="Deprecated,HardcodedText"
                 />
                 
         </android.support.design.widget.TextInputLayout>
@@ -59,7 +78,9 @@
             android:layout_gravity="bottom"
             android:layout_marginBottom="10dp"
             android:layout_marginRight="16dp"
+            android:contentDescription="Password input icon"
             android:src="@drawable/ic_password"
+            tools:ignore="HardcodedText,RtlHardcoded"
             />
         
         <android.support.design.widget.TextInputLayout
@@ -80,7 +101,7 @@
                 android:singleLine="true"
                 android:text="[\\][\\][\\]"
                 android:theme="@style/EditTextLight"
-                tools:ignore="HardcodedText"
+                tools:ignore="Deprecated,HardcodedText"
                 />
                 
         </android.support.design.widget.TextInputLayout>

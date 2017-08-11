@@ -78,6 +78,11 @@ public class MainActivity extends BaseActivity {
                     handler.postDelayed (runnable, 5000);
                     dismissProgressBar (R.id.data_initial_loading, R.id.data);
                 }
+                
+                @Override
+                protected void onUnauthorized () {
+                    logout ();
+                }
             });
     }
     
@@ -104,11 +109,6 @@ public class MainActivity extends BaseActivity {
                 @Override
                 protected void onFailure () {
                     Toast.makeText (MainActivity.this, "Gagal. Coba lagi.", Toast.LENGTH_SHORT).show ();
-                }
-    
-                @Override
-                protected void onUnauthorized () {
-                    logout ();
                 }
     
                 @Override
