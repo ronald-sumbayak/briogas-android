@@ -8,6 +8,4 @@ public class Constant {
     
     public static final String SPNAME = "Briogas";
     public static final String SPKEY_TOKEN = "User_Token";
-    public static final String SPKEY_ID = "User_ID";
-    public static final String SPKEY_USERNAME = "User_Username";
 }
