@@ -21,7 +21,8 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:contentDescription="Briogas Icon"
-            android:src="@mipmap/ic_launcher"
+            android:src="@drawable/logo"
+            android:padding="56dp"
             tools:ignore="ContentDescription,HardcodedText"
             />
         
@@ -57,7 +58,6 @@
                 android:hint="Username"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:text="ronald"
                 android:theme="@style/EditTextLight"
                 tools:ignore="Deprecated,HardcodedText"
                 />
@@ -99,7 +99,6 @@
                 android:inputType="textPassword"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:text="[\\][\\][\\]"
                 android:theme="@style/EditTextLight"
                 tools:ignore="Deprecated,HardcodedText"
                 />

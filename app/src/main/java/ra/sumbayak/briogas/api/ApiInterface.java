@@ -5,12 +5,14 @@ import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 
 import java.io.IOException;
+import java.util.List;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import ra.sumbayak.briogas.api.models.DeviceData;
 import ra.sumbayak.briogas.api.models.LoginCredentials;
+import ra.sumbayak.briogas.api.models.MethaneProduction;
 import ra.sumbayak.briogas.api.models.Token;
 import retrofit2.Call;
 import retrofit2.Retrofit;

@@ -1,36 +1,41 @@
 package ra.sumbayak.briogas.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
-import com.github.lzyzsd.circleprogress.DonutProgress;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
+import butterknife.*;
 import ra.sumbayak.briogas.BaseActivity;
 import ra.sumbayak.briogas.R;
 import ra.sumbayak.briogas.api.ApiInterface;
 import ra.sumbayak.briogas.api.QRCallback;
 import ra.sumbayak.briogas.api.models.DeviceData;
+import ra.sumbayak.briogas.views.ProgressiveTextView;
+import ra.sumbayak.briogas.views.SmoothDonusProgress;
+import ra.sumbayak.briogas.views.VerticalBar;
 import retrofit2.Callback;
 
 import static ra.sumbayak.briogas.Constant.SPNAME;
 
 public class MainActivity extends BaseActivity {
     
-    @BindView (R.id.toggle_katup) Button btnToggleKatup;
-    @BindView (R.id.methane) DonutProgress methane;
-    @BindView (R.id.oxygen) DonutProgress oxygen;
-    @BindView (R.id.other) DonutProgress other;
+    @BindView (R.id.methane) SmoothDonusProgress methane;
+    @BindView (R.id.pressure) VerticalBar pressure;
+    @BindView (R.id.temperature) ProgressiveTextView temperature;
+    @BindView (R.id.content) ProgressiveTextView content;
+    @BindView (R.id.refresh) Button refresh;
+    @BindView (R.id.screen_wake) CheckBox screenWake;
     private Callback<DeviceData> callback;
     private Handler handler;
     private Runnable runnable;
+    private boolean exitPending, autoUpdate, refreshed;
     
     @Override
     protected void onCreate (@Nullable Bundle savedInstanceState) {
@@ -57,7 +62,9 @@ public class MainActivity extends BaseActivity {
     
             @Override
             protected void onExit () {
-                handler.postDelayed (runnable, 5000);
+                dismissProgressBar (R.id.refresh_loading, R.id.refresh);
+                if (autoUpdate)
+                    handler.postDelayed (runnable, 5000);
             }
         };
     }
@@ -73,8 +80,10 @@ public class MainActivity extends BaseActivity {
                 @Override
                 protected void onSuccessful (@NonNull DeviceData body) {
                     setNewData (body);
-                    handler.postDelayed (runnable, 5000);
+                    // handler.postDelayed (runnable, 5000);
                     dismissProgressBar (R.id.data_initial_loading, R.id.data);
+                    if (autoUpdate)
+                        handler.postDelayed (runnable, 5000);
                 }
                 
                 @Override
@@ -85,44 +94,68 @@ public class MainActivity extends BaseActivity {
     }
     
     @Override
+    protected void onResume () {
+        super.onResume ();
+        if (screenWake.isChecked ())
+            getWindow ().addFlags (WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    
+    @Override
+    protected void onPause () {
+        super.onPause ();
+        if (screenWake.isChecked ())
+            getWindow ().clearFlags (WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    
+    @Override
     protected void onStop () {
         super.onStop ();
         showProgressBar (R.id.data_initial_loading, R.id.data);
         handler.removeCallbacks (runnable);
     }
     
-    @OnClick (R.id.toggle_katup)
-    public void toggleKatup () {
-        showProgressBar (R.id.toggle_katup_loading, R.id.toggle_katup);
+    @OnCheckedChanged (R.id.screen_wake)
+    public void changeScreenWakeState (boolean checked) {
+        if (checked)
+            getWindow ().addFlags (WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        else
+            getWindow ().clearFlags (WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+    
+    @SuppressLint ("SetTextI18n")
+    @OnClick (R.id.refresh)
+    public void refreshData () {
+        if (autoUpdate) {
+            refresh.setText ("Refresh");
+            autoUpdate = false;
+        }
+        else {
+            if (!refreshed)
+                Toast.makeText (this, "Hold refresh button for Auto-update", Toast.LENGTH_SHORT).show ();
+            showProgressBar (R.id.refresh_loading, R.id.refresh);
+            handler.postDelayed (runnable, 5000);
+            refreshed = true;
+        }
+    }
+    
+    @SuppressLint ("SetTextI18n")
+    @OnLongClick (R.id.refresh)
+    public boolean changeRefreshMode () {
+        if (!autoUpdate) {
+            refresh.setText ("STOP");
+            autoUpdate = true;
+        }
         
-        ApiInterface.Builder
-            .build (this)
-            .toggle ()
-            .enqueue (new QRCallback<DeviceData> () {
-                @Override
-                protected void onSuccessful (@NonNull DeviceData body) {
-                    setNewData (body);
-                }
-    
-                @Override
-                protected void onFailure () {
-                    Toast.makeText (MainActivity.this, "Gagal. Coba lagi.", Toast.LENGTH_SHORT).show ();
-                }
-    
-                @Override
-                protected void onExit () {
-                    dismissProgressBar (R.id.toggle_katup_loading, R.id.toggle_katup);
-                }
-            });
+        refreshed = true;
+        handler.postDelayed (runnable, 5000);
+        return true;
     }
     
     private void setNewData (DeviceData data) {
-        methane.setDonut_progress (String.valueOf (data.methane));
-        oxygen.setDonut_progress (String.valueOf (data.oxygen));
-        other.setDonut_progress (String.valueOf (100 - data.methane - data.oxygen));
-    
-        if (data.katup) btnToggleKatup.setText ("Tutup Katup");
-        else btnToggleKatup.setText ("Buka Katup");
+        methane.setPercentage (data.methane);
+        pressure.setPercentage (data.pressure);
+        temperature.setValue (data.temperature);
+        content.setValue (data.content);
     }
     
     private void logout () {
@@ -132,5 +165,25 @@ public class MainActivity extends BaseActivity {
             .apply ();
         startActivity (new Intent (this, AuthActivity.class));
         finish ();
+    }
+    
+    @Override
+    public void onBackPressed () {
+        if (exitPending)
+            super.onBackPressed ();
+        else {
+            exitPending = true;
+            Toast.makeText (MainActivity.this, "Press back again to exit.", Toast.LENGTH_SHORT).show ();
+            
+            new Handler ().postDelayed (
+                new Runnable () {
+                    @Override
+                    public void run () {
+                        exitPending = false;
+                    }
+                },
+                2500
+            );
+        }
     }
 }

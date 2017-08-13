@@ -18,12 +18,17 @@ public abstract class QRCallback<T> implements Callback<T> {
             T body = response.body ();
             Log.e ("QRCallback", String.valueOf (body));
             
-            if (body != null && isSuccess (body)) onSuccessful (body);
+            if (body != null && isSuccess (body)) _onSuccessful (body);
             else onFailure ();
         }
         else if (response.code () == 401) onUnauthorized ();
         else onFailure ();
         onExit ();
+    }
+    
+    private void _onSuccessful (@NonNull T body) {
+        Log.e ("QRCallback", body.toString ());
+        onSuccessful (body);
     }
     
     @Override
